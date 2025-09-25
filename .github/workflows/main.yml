@@ -1,0 +1,58 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-windows:
+    runs-on: windows-2022   # фиксируем образ
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+
+      - name: Install requirements
+        shell: cmd
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Сборка "всё в одном файле" (удобно для развёртывания)
+      - name: Build ONEFILE EXE
+        shell: cmd
+        run: |
+          pyinstaller --clean --noconsole --onefile ^
+            --name SupplierImportApp ^
+            --hidden-import openpyxl --hidden-import et_xmlfile ^
+            --hidden-import tkinter --hidden-import tkinter.filedialog ^
+            supplier_import_app.py
+
+      # Сборка "папкой" (на некоторых ПК стабильнее, если onefile вдруг ругнётся)
+      - name: Build ONEDIR EXE
+        shell: cmd
+        run: |
+          pyinstaller --clean --noconsole --onedir ^
+            --name SupplierImportApp_dir ^
+            --hidden-import openpyxl --hidden-import et_xmlfile ^
+            --hidden-import tkinter --hidden-import tkinter.filedialog ^
+            supplier_import_app.py
+
+      - name: Upload ONEFILE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SupplierImportApp_onefile
+          path: dist/SupplierImportApp.exe
+
+      - name: Upload ONEDIR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SupplierImportApp_onedir
+          path: dist/SupplierImportApp_dir/**
