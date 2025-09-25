@@ -33,6 +33,8 @@ jobs:
             --name SupplierImportApp ^
             --hidden-import openpyxl --hidden-import et_xmlfile ^
             --hidden-import tkinter --hidden-import tkinter.filedialog ^
+            --collect-all numpy --collect-all pandas ^
+            --runtime-hook hooks\rth_lockdown.py ^
             supplier_import_app.py
 
       # Сборка "папкой" (на некоторых ПК стабильнее, если onefile вдруг ругнётся)
